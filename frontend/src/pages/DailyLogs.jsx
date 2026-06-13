@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { Clock, MapPin, ListChecks, ExternalLink, FileImage, Download, Loader2 } from 'lucide-react';
-import apiService from '../services/api';
+import apiService, { getMediaUrl } from '../services/api';
 
 function DailyLogs({ tripId, tripData }) {
   const [logs, setLogs] = useState([]);
@@ -14,7 +14,12 @@ function DailyLogs({ tripId, tripData }) {
       try {
         const data = await apiService.getTripLogs(tripId);
         if (!cancelled) {
-          setLogs(data);
+          const processedLogs = data.map(log => ({
+            ...log,
+            image_url: getMediaUrl(log.image_url),
+            pdf_url: getMediaUrl(log.pdf_url)
+          }));
+          setLogs(processedLogs);
         }
       } catch (err) {
         if (!cancelled) {
