@@ -142,16 +142,7 @@ function App() {
           })}
         </nav>
 
-        {/* Bottom Status — flows naturally, no boxed divider */}
-        <div className="px-5 py-5">
-          <div className="flex items-center gap-2 mb-0.5">
-            <span className="h-2 w-2 rounded-full bg-[#16A34A]"></span>
-            <span className="text-[12px] font-semibold text-black">System Connected</span>
-          </div>
-          <p className="text-[11px] text-[#9CA3AF] pl-4">
-            FMCSA Part 395 · v1.1
-          </p>
-        </div>
+
       </aside>
 
       {/* ── Main Content ── */}
