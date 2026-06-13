@@ -2,60 +2,44 @@
 @import "leaflet/dist/leaflet.css";
 
 @theme {
-  --color-primary: #0F172A;
-  --color-secondary: #2563EB;
-  --color-success: #22C55E;
+  --color-primary: #191970;
+  --color-primary-hover: #2E3A8C;
+  --color-surface: #F8FAFC;
+  --color-border: #E5E7EB;
+  --color-text-primary: #000000;
+  --color-text-secondary: #6B7280;
+  --color-success: #16A34A;
   --color-warning: #F59E0B;
-  --color-danger: #EF4444;
-  
-  --font-sans: 'Outfit', 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, sans-serif;
+  --color-danger: #DC2626;
+  --color-info: #2563EB;
+
+  --font-sans: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, sans-serif;
 }
 
-/* Custom Scrollbar */
+/* ── Scrollbar ── */
 ::-webkit-scrollbar {
-  width: 8px;
-  height: 8px;
+  width: 6px;
+  height: 6px;
 }
 
 ::-webkit-scrollbar-track {
-  background: #f1f5f9;
-}
-
-.dark ::-webkit-scrollbar-track {
-  background: #1e293b;
+  background: #F8FAFC;
 }
 
 ::-webkit-scrollbar-thumb {
-  background: #cbd5e1;
-  border-radius: 4px;
-}
-
-.dark ::-webkit-scrollbar-thumb {
-  background: #475569;
+  background: #D1D5DB;
+  border-radius: 3px;
 }
 
 ::-webkit-scrollbar-thumb:hover {
-  background: #94a3b8;
+  background: #9CA3AF;
 }
 
-/* Glassmorphism Styles */
-.glass-panel {
-  background: rgba(255, 255, 255, 0.7);
-  backdrop-filter: blur(12px);
-  -webkit-backdrop-filter: blur(12px);
-  border: 1px solid rgba(255, 255, 255, 0.3);
-}
-
-.dark .glass-panel {
-  background: rgba(15, 23, 42, 0.7);
-  border: 1px solid rgba(255, 255, 255, 0.05);
-}
-
-/* Leaflet Map Height */
+/* ── Leaflet ── */
 .leaflet-container {
   width: 100%;
   height: 100%;
-  border-radius: 0.75rem;
+  border-radius: 12px;
   z-index: 1;
 }
 
@@ -65,6 +49,24 @@
   justify-content: center;
   align-items: center;
   border-radius: 50%;
-  box-shadow: 0 4px 6px -1px rgb(0 0 0 / 0.1), 0 2px 4px -2px rgb(0 0 0 / 0.1);
+  box-shadow: 0 2px 4px -1px rgb(0 0 0 / 0.1);
   border: 2px solid white;
+}
+
+/* ── Fade-in animation ── */
+@keyframes fadeIn {
+  from { opacity: 0; transform: translateY(4px); }
+  to   { opacity: 1; transform: translateY(0); }
+}
+
+.animate-fade-in {
+  animation: fadeIn 0.3s ease-out both;
+}
+
+/* ── Sidebar overlay for mobile ── */
+.sidebar-overlay {
+  position: fixed;
+  inset: 0;
+  background: rgba(0, 0, 0, 0.3);
+  z-index: 40;
 }

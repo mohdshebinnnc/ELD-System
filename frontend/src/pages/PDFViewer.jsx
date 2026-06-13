@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { Download, FileText, Info, ShieldCheck, Printer, FileDown } from 'lucide-react';
+import { Download, FileText, ShieldCheck, Printer, FileDown, Loader2, Info } from 'lucide-react';
 import apiService from '../services/api';
 
 function PDFViewer({ tripId }) {
@@ -23,118 +23,106 @@ function PDFViewer({ tripId }) {
 
   if (loading) {
     return (
-      <div className="h-64 flex flex-col items-center justify-center space-y-3">
-        <div className="h-8 w-8 border-4 border-blue-500 border-t-transparent rounded-full animate-spin"></div>
-        <span className="text-slate-500 font-semibold text-sm">Generating PDF compilation report...</span>
+      <div className="h-64 flex flex-col items-center justify-center gap-3">
+        <Loader2 className="h-6 w-6 text-[#191970] animate-spin" />
+        <span className="text-[14px] text-[#6B7280] font-medium">Generating PDF report...</span>
       </div>
     );
   }
 
   return (
-    <div className="space-y-6 max-w-6xl mx-auto flex flex-col h-[calc(100vh-8rem)]">
-      {/* Header section */}
-      <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 shrink-0">
-        <div>
-          <h2 className="text-3xl font-extrabold tracking-tight text-slate-900 dark:text-white">
-            Downloadable PDF Logs
-          </h2>
-          <p className="text-slate-500 dark:text-slate-400 mt-1">
-            Print, sign, and store your official HOS trip compliance summary sheet.
-          </p>
-        </div>
+    <div className="space-y-5 max-w-[1200px] mx-auto flex flex-col h-[calc(100vh-10rem)]">
 
+      {/* ── Header ── */}
+      <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-3 shrink-0">
+        <p className="text-[14px] text-[#6B7280]">
+          Print, sign, and store your official HOS trip compliance summary sheet.
+        </p>
         {pdfUrl && (
           <a
             href={pdfUrl}
             download={`hos_trip_${tripId}_logs.pdf`}
-            className="flex items-center space-x-2 bg-gradient-to-r from-blue-600 to-indigo-600 hover:from-blue-700 hover:to-indigo-700 text-white px-5 py-3 rounded-xl shadow-lg hover:shadow-blue-500/20 text-sm font-bold transition-all cursor-pointer"
+            className="inline-flex items-center gap-2 bg-[#191970] hover:bg-[#2E3A8C] text-white px-5 py-2.5 rounded-xl text-[13px] font-semibold transition-colors cursor-pointer shrink-0"
           >
             <Download className="h-4 w-4" />
-            <span>Download Compliant PDF Logs</span>
+            <span>Download PDF Report</span>
           </a>
         )}
       </div>
 
-      {/* Grid Layout: Left Info Card, Right PDF Iframe Preview */}
-      <div className="grid grid-cols-1 lg:grid-cols-4 gap-6 flex-grow min-h-0">
-        {/* Info Column */}
-        <div className="lg:col-span-1 space-y-6 shrink-0">
-          {/* Summary Package Description */}
-          <div className="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-2xl p-5 shadow-sm space-y-4">
-            <h3 className="text-sm font-black text-slate-800 dark:text-slate-200 flex items-center space-x-2">
-              <FileText className="h-5 w-5 text-indigo-500" />
-              <span>PDF Logs Package Includes:</span>
+      {/* ── Content Grid ── */}
+      <div className="grid grid-cols-1 lg:grid-cols-4 gap-5 flex-grow min-h-0">
+
+        {/* Left: Info Cards */}
+        <div className="lg:col-span-1 space-y-5 shrink-0">
+
+          {/* PDF Contents */}
+          <div className="bg-white border border-[#E5E7EB] rounded-xl p-5 space-y-4">
+            <h3 className="text-[14px] font-semibold text-black flex items-center gap-2">
+              <FileText className="h-4 w-4 text-[#6B7280]" />
+              <span>PDF Package Includes</span>
             </h3>
-            
-            <ul className="space-y-2.5 text-xs text-slate-600 dark:text-slate-400 font-semibold">
-              <li className="flex items-center space-x-2">
-                <span className="h-1.5 w-1.5 rounded-full bg-blue-500"></span>
-                <span>Itinerary & Mileage Summary</span>
-              </li>
-              <li className="flex items-center space-x-2">
-                <span className="h-1.5 w-1.5 rounded-full bg-blue-500"></span>
-                <span>Detailed Route Coordinates</span>
-              </li>
-              <li className="flex items-center space-x-2">
-                <span className="h-1.5 w-1.5 rounded-full bg-blue-500"></span>
-                <span>Violations & Compliance Audits</span>
-              </li>
-              <li className="flex items-center space-x-2">
-                <span className="h-1.5 w-1.5 rounded-full bg-blue-500"></span>
-                <span>Pillow-Drawn Daily Grid Sheets</span>
-              </li>
-              <li className="flex items-center space-x-2">
-                <span className="h-1.5 w-1.5 rounded-full bg-blue-500"></span>
-                <span>Auto-compiled Remarks & Signposts</span>
-              </li>
+            <ul className="space-y-2.5 text-[13px] text-[#374151]">
+              {[
+                'Itinerary & Mileage Summary',
+                'Detailed Route Coordinates',
+                'Compliance & HOS Action Schedule',
+                'Pillow-Drawn Daily Grid Sheets',
+                'Auto-compiled Remarks & Signposts',
+              ].map((item, i) => (
+                <li key={i} className="flex items-center gap-2.5">
+                  <span className="h-1.5 w-1.5 rounded-full bg-[#191970] shrink-0"></span>
+                  <span>{item}</span>
+                </li>
+              ))}
             </ul>
           </div>
 
-          {/* Legal Compliance Disclaimer */}
-          <div className="bg-emerald-50 dark:bg-emerald-950/20 border border-emerald-200 dark:border-emerald-900/50 rounded-2xl p-5 shadow-sm space-y-3">
-            <h4 className="text-xs font-bold text-emerald-800 dark:text-emerald-400 flex items-center space-x-1.5">
-              <ShieldCheck className="h-4 w-4" />
-              <span>FMCSA Compliance Check</span>
-            </h4>
-            <p className="text-[11px] text-emerald-700 dark:text-emerald-300 font-medium leading-relaxed">
+          {/* Compliance Badge */}
+          <div className="bg-[#F0FDF4] border border-[#BBF7D0] rounded-xl p-5 space-y-2">
+            <div className="flex items-center gap-2">
+              <ShieldCheck className="h-4 w-4 text-[#16A34A]" />
+              <h4 className="text-[13px] font-semibold text-[#166534]">FMCSA Compliance</h4>
+            </div>
+            <p className="text-[12px] text-[#15803D] leading-relaxed">
               This log set meets standard 70-hour / 8-day duty conditions for property-carrying drivers. Ensure to keep signature copies filed in your safety management files.
             </p>
           </div>
         </div>
 
-        {/* PDF Iframe Viewer Column */}
-        <div className="lg:col-span-3 bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-2xl p-4 shadow-sm flex flex-col min-h-[400px]">
-          <div className="flex items-center space-x-2 mb-3 shrink-0">
-            <Printer className="h-5 w-5 text-blue-500" />
-            <h3 className="text-sm font-bold text-slate-800 dark:text-slate-200">Interactive Document Viewer</h3>
+        {/* Right: PDF Viewer */}
+        <div className="lg:col-span-3 bg-white border border-[#E5E7EB] rounded-xl p-4 flex flex-col min-h-[400px]">
+          <div className="flex items-center gap-2 mb-3 shrink-0">
+            <Printer className="h-4 w-4 text-[#6B7280]" />
+            <h3 className="text-[14px] font-semibold text-black">Document Viewer</h3>
           </div>
 
-          <div className="flex-grow bg-slate-50 dark:bg-slate-950 rounded-xl overflow-hidden border border-slate-200 dark:border-slate-800/80 relative">
+          <div className="flex-grow bg-[#F8FAFC] rounded-xl overflow-hidden border border-[#E5E7EB] relative">
             {pdfUrl ? (
               <object
                 data={pdfUrl}
                 type="application/pdf"
                 className="w-full h-full"
               >
-                <div className="absolute inset-0 flex flex-col items-center justify-center p-6 text-center space-y-4">
-                  <FileDown className="h-12 w-12 text-slate-400 animate-bounce" />
+                <div className="absolute inset-0 flex flex-col items-center justify-center p-6 text-center gap-4">
+                  <FileDown className="h-10 w-10 text-[#9CA3AF]" />
                   <div>
-                    <h4 className="text-sm font-bold text-slate-800 dark:text-slate-200">Browser Preview Unsupported</h4>
-                    <p className="text-xs text-slate-400 mt-1">Your browser doesn't support embedding PDF previews. Please click download below to save the logs locally.</p>
+                    <h4 className="text-[14px] font-semibold text-black">Browser Preview Unavailable</h4>
+                    <p className="text-[13px] text-[#6B7280] mt-1">Your browser doesn't support embedded PDF previews. Click download to save locally.</p>
                   </div>
                   <a
                     href={pdfUrl}
                     download={`hos_trip_${tripId}_logs.pdf`}
-                    className="bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded-xl text-xs font-bold shadow-md cursor-pointer"
+                    className="bg-[#191970] hover:bg-[#2E3A8C] text-white px-4 py-2 rounded-xl text-[13px] font-semibold cursor-pointer transition-colors"
                   >
                     Download PDF Report
                   </a>
                 </div>
               </object>
             ) : (
-              <div className="absolute inset-0 flex flex-col items-center justify-center text-slate-400">
+              <div className="absolute inset-0 flex flex-col items-center justify-center text-[#9CA3AF]">
                 <Info className="h-8 w-8" />
-                <span className="text-xs mt-2">No PDF compiled for preview.</span>
+                <span className="text-[13px] mt-2">No PDF compiled for preview.</span>
               </div>
             )}
           </div>

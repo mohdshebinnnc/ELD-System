@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { Calendar, Clock, MapPin, ListChecks, FileImage, ExternalLink } from 'lucide-react';
+import { Clock, MapPin, ListChecks, ExternalLink, FileImage, Download, Loader2 } from 'lucide-react';
 import apiService from '../services/api';
 
 function DailyLogs({ tripId, tripData }) {
@@ -32,17 +32,17 @@ function DailyLogs({ tripId, tripData }) {
 
   if (loading) {
     return (
-      <div className="h-64 flex flex-col items-center justify-center space-y-3">
-        <div className="h-8 w-8 border-4 border-blue-500 border-t-transparent rounded-full animate-spin"></div>
-        <span className="text-slate-500 font-semibold text-sm">Loading daily driver logs...</span>
+      <div className="h-64 flex flex-col items-center justify-center gap-3">
+        <Loader2 className="h-6 w-6 text-[#191970] animate-spin" />
+        <span className="text-[14px] text-[#6B7280] font-medium">Loading daily driver logs...</span>
       </div>
     );
   }
 
   if (logs.length === 0) {
     return (
-      <div className="p-8 text-center bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-2xl">
-        <p className="text-slate-400 text-sm">No driver logs found for this trip.</p>
+      <div className="p-12 text-center bg-white border border-[#E5E7EB] rounded-xl">
+        <p className="text-[14px] text-[#9CA3AF]">No driver logs found for this trip.</p>
       </div>
     );
   }
@@ -50,66 +50,62 @@ function DailyLogs({ tripId, tripData }) {
   const activeDay = logs[selectedDayIdx];
 
   return (
-    <div className="space-y-6 max-w-6xl mx-auto">
-      {/* Page Title */}
-      <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
+    <div className="space-y-5 max-w-[1200px] mx-auto">
+
+      {/* ── Header + Download ── */}
+      <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-3">
         <div>
-          <h2 className="text-3xl font-extrabold tracking-tight text-slate-900 dark:text-white">
-            Daily Driver Logs
-          </h2>
-          <p className="text-slate-500 dark:text-slate-400 mt-1">
+          <p className="text-[14px] text-[#6B7280]">
             Official FMCSA paper-style logs drawn dynamically with Python Pillow for each 24-hour cycle.
           </p>
         </div>
-
         {activeDay?.pdf_url && (
           <a
             href={activeDay.pdf_url}
             target="_blank"
             rel="noopener noreferrer"
-            className="flex items-center space-x-2 bg-blue-600 hover:bg-blue-700 text-white px-4 py-2.5 rounded-xl shadow-md text-sm font-semibold transition-all cursor-pointer"
+            className="inline-flex items-center gap-2 bg-[#191970] hover:bg-[#2E3A8C] text-white px-4 py-2.5 rounded-xl text-[13px] font-semibold transition-colors cursor-pointer shrink-0"
           >
+            <Download className="h-4 w-4" />
             <span>Download All Logs (PDF)</span>
-            <ExternalLink className="h-4 w-4" />
           </a>
         )}
       </div>
 
-      {/* Day Selector Tabs */}
-      <div className="flex overflow-x-auto space-x-2 pb-2 scrollbar-thin shrink-0">
+      {/* ── Day Selector ── */}
+      <div className="flex overflow-x-auto gap-2 pb-1 shrink-0">
         {logs.map((log, idx) => (
           <button
             key={idx}
             onClick={() => setSelectedDayIdx(idx)}
-            className={`px-5 py-3 rounded-xl text-sm font-bold whitespace-nowrap transition-all duration-150 cursor-pointer ${
+            className={`px-4 py-2.5 rounded-xl text-[13px] font-medium whitespace-nowrap transition-all duration-150 cursor-pointer border ${
               selectedDayIdx === idx
-                ? 'bg-slate-900 text-white dark:bg-white dark:text-slate-950 shadow-md'
-                : 'bg-white text-slate-600 dark:bg-slate-900 dark:text-slate-400 border border-slate-200 dark:border-slate-800 hover:bg-slate-50 dark:hover:bg-slate-800'
+                ? 'bg-[#191970] text-white border-[#191970]'
+                : 'bg-white text-[#374151] border-[#E5E7EB] hover:bg-[#F8FAFC]'
             }`}
           >
-            <div className="flex flex-col items-start">
-              <span className="text-[10px] uppercase opacity-70">Day {log.day_number}</span>
-              <span className="text-xs mt-0.5">{log.date}</span>
-            </div>
+            <span className="block text-[10px] uppercase opacity-70 mb-0.5">Day {log.day_number}</span>
+            <span className="block text-[12px]">{log.date}</span>
           </button>
         ))}
       </div>
 
-      {/* Active Day Logs Container */}
-      <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
-        {/* Pillow Drawn Grid PNG */}
-        <div className="lg:col-span-2 bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-2xl p-6 shadow-sm space-y-4">
+      {/* ── Log Viewer + Metrics (70/30) ── */}
+      <div className="grid grid-cols-1 lg:grid-cols-10 gap-5">
+
+        {/* Left: Log Sheet Viewer */}
+        <div className="lg:col-span-7 bg-white border border-[#E5E7EB] rounded-xl p-5 space-y-4">
           <div className="flex justify-between items-center">
-            <h3 className="text-base font-bold text-slate-800 dark:text-slate-200 flex items-center space-x-2">
-              <FileImage className="h-5 w-5 text-blue-500" />
-              <span>Drawn Log Sheet Grid (Day {activeDay.day_number})</span>
+            <h3 className="text-[16px] font-semibold text-black flex items-center gap-2">
+              <FileImage className="h-5 w-5 text-[#6B7280]" />
+              <span>Log Sheet — Day {activeDay.day_number}</span>
             </h3>
             {activeDay.image_url && (
               <a
                 href={activeDay.image_url}
                 target="_blank"
                 rel="noreferrer"
-                className="text-xs text-blue-600 dark:text-blue-400 font-semibold hover:underline flex items-center space-x-1"
+                className="text-[12px] text-[#191970] font-medium hover:underline flex items-center gap-1"
               >
                 <span>View Full Size</span>
                 <ExternalLink className="h-3.5 w-3.5" />
@@ -117,86 +113,74 @@ function DailyLogs({ tripId, tripData }) {
             )}
           </div>
 
-          <div className="bg-slate-100 dark:bg-slate-950 p-2 rounded-xl border border-slate-200 dark:border-slate-800/80 flex items-center justify-center overflow-hidden">
+          <div className="bg-[#F8FAFC] p-3 rounded-xl border border-[#E5E7EB] flex items-center justify-center overflow-hidden">
             {activeDay.image_url ? (
               <img
                 src={activeDay.image_url}
                 alt={`Driver log sheet for day ${activeDay.day_number}`}
-                className="max-w-full h-auto rounded-lg shadow-sm border border-slate-200 dark:border-slate-800"
+                className="max-w-full h-auto rounded-lg shadow-sm border border-[#E5E7EB]"
               />
             ) : (
-              <div className="p-8 text-center text-slate-400 text-xs">
+              <div className="py-12 text-center text-[#9CA3AF] text-[13px]">
                 Log sheet image is not available.
               </div>
             )}
           </div>
         </div>
 
-        {/* Daily Metrics and Remarks */}
-        <div className="space-y-6">
-          {/* Daily Totals Widget */}
-          <div className="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-2xl p-6 shadow-sm space-y-4">
-            <h3 className="text-base font-bold text-slate-800 dark:text-slate-200 flex items-center space-x-2">
-              <Clock className="h-5 w-5 text-indigo-500" />
-              <span>Daily HOS Breakdowns</span>
+        {/* Right: Metrics + Remarks */}
+        <div className="lg:col-span-3 space-y-5">
+
+          {/* Daily Totals */}
+          <div className="bg-white border border-[#E5E7EB] rounded-xl p-5 space-y-4">
+            <h3 className="text-[14px] font-semibold text-black flex items-center gap-2">
+              <Clock className="h-4 w-4 text-[#6B7280]" />
+              <span>Daily Summary</span>
             </h3>
 
-            <div className="grid grid-cols-2 gap-4">
-              <div className="bg-slate-50 dark:bg-slate-950 p-4 rounded-xl border border-slate-100 dark:border-slate-800/50">
-                <p className="text-[10px] text-slate-500 font-semibold uppercase">Driving Hours</p>
-                <h4 className="text-xl font-black text-blue-600 dark:text-blue-400 mt-1">
-                  {activeDay.driving_hours.toFixed(1)} hrs
-                </h4>
+            <div className="grid grid-cols-2 gap-3">
+              <div className="bg-[#F8FAFC] border border-[#E5E7EB] rounded-xl px-3 py-3">
+                <p className="text-[11px] text-[#6B7280] font-medium">Driving</p>
+                <p className="text-[20px] font-bold text-[#2563EB] mt-0.5">{activeDay.driving_hours.toFixed(1)}h</p>
               </div>
-
-              <div className="bg-slate-50 dark:bg-slate-950 p-4 rounded-xl border border-slate-100 dark:border-slate-800/50">
-                <p className="text-[10px] text-slate-500 font-semibold uppercase">On-Duty Hours</p>
-                <h4 className="text-xl font-black text-amber-600 dark:text-amber-400 mt-1">
-                  {activeDay.duty_hours.toFixed(1)} hrs
-                </h4>
+              <div className="bg-[#F8FAFC] border border-[#E5E7EB] rounded-xl px-3 py-3">
+                <p className="text-[11px] text-[#6B7280] font-medium">On-Duty</p>
+                <p className="text-[20px] font-bold text-[#F59E0B] mt-0.5">{activeDay.duty_hours.toFixed(1)}h</p>
               </div>
-
-              <div className="bg-slate-50 dark:bg-slate-950 p-4 rounded-xl border border-slate-100 dark:border-slate-800/50">
-                <p className="text-[10px] text-slate-500 font-semibold uppercase">Sleeper / Rest Hours</p>
-                <h4 className="text-xl font-black text-indigo-600 dark:text-indigo-400 mt-1">
-                  {activeDay.rest_hours.toFixed(1)} hrs
-                </h4>
+              <div className="bg-[#F8FAFC] border border-[#E5E7EB] rounded-xl px-3 py-3">
+                <p className="text-[11px] text-[#6B7280] font-medium">Rest / Sleeper</p>
+                <p className="text-[20px] font-bold text-[#191970] mt-0.5">{activeDay.rest_hours.toFixed(1)}h</p>
               </div>
-
-              <div className="bg-slate-50 dark:bg-slate-950 p-4 rounded-xl border border-slate-100 dark:border-slate-800/50">
-                <p className="text-[10px] text-slate-500 font-semibold uppercase">Log Balance</p>
-                <h4 className="text-xl font-black text-emerald-600 dark:text-emerald-400 mt-1">
-                  24.0 hrs
-                </h4>
+              <div className="bg-[#F8FAFC] border border-[#E5E7EB] rounded-xl px-3 py-3">
+                <p className="text-[11px] text-[#6B7280] font-medium">Total</p>
+                <p className="text-[20px] font-bold text-[#16A34A] mt-0.5">24.0h</p>
               </div>
             </div>
           </div>
 
-          {/* Remarks Table Panel */}
-          <div className="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-2xl p-6 shadow-sm space-y-4">
-            <h3 className="text-base font-bold text-slate-800 dark:text-slate-200 flex items-center space-x-2">
-              <ListChecks className="h-5 w-5 text-indigo-500" />
-              <span>Remarks & Signposts</span>
+          {/* Remarks */}
+          <div className="bg-white border border-[#E5E7EB] rounded-xl p-5 space-y-3">
+            <h3 className="text-[14px] font-semibold text-black flex items-center gap-2">
+              <ListChecks className="h-4 w-4 text-[#6B7280]" />
+              <span>Remarks</span>
             </h3>
 
-            <div className="space-y-3 overflow-y-auto max-h-[220px] pr-1">
+            <div className="space-y-2.5 overflow-y-auto max-h-[240px] pr-1">
               {activeDay.remarks?.length === 0 ? (
-                <p className="text-xs text-slate-400 text-center py-4">No remarks recorded for this day.</p>
+                <p className="text-[13px] text-[#9CA3AF] text-center py-4">No remarks recorded for this day.</p>
               ) : (
                 activeDay.remarks.map((rem, rIdx) => (
-                  <div key={rIdx} className="p-3 bg-slate-50 dark:bg-slate-950 border border-slate-100 dark:border-slate-800/50 rounded-xl space-y-1">
+                  <div key={rIdx} className="bg-[#F8FAFC] border border-[#E5E7EB] rounded-xl px-3 py-2.5 space-y-1">
                     <div className="flex justify-between items-center">
-                      <span className="text-[10px] font-mono font-bold text-indigo-600 dark:text-indigo-400 bg-indigo-50 dark:bg-indigo-950/30 px-1.5 py-0.5 rounded">
+                      <span className="text-[11px] font-mono font-semibold text-[#191970] bg-[#EEF2FF] px-1.5 py-0.5 rounded">
                         {rem.time}
                       </span>
-                      <span className="text-[10px] font-bold text-slate-400 flex items-center">
-                        <MapPin className="h-3 w-3 shrink-0 mr-0.5" />
+                      <span className="text-[10px] text-[#6B7280] flex items-center gap-0.5">
+                        <MapPin className="h-3 w-3 shrink-0" />
                         {rem.location.split(',')[0]}
                       </span>
                     </div>
-                    <p className="text-xs font-semibold text-slate-700 dark:text-slate-300">
-                      {rem.remark}
-                    </p>
+                    <p className="text-[12px] font-medium text-[#374151]">{rem.remark}</p>
                   </div>
                 ))
               )}
