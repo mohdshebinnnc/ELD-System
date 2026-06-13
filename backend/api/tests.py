@@ -50,6 +50,15 @@ class HOSTestCase(TestCase):
         self.assertTrue(has_break, "Should automatically insert a 30-min break before 8 hours of driving")
         self.assertTrue(has_sleeper, "Should automatically insert a 10-hour sleeper berth before 11 hours of driving")
 
+        # Verify compliance events are tracked as dictionaries
+        self.assertGreater(len(simulator.violations), 0)
+        for event in simulator.violations:
+            self.assertIsInstance(event, dict)
+            self.assertIn('category', event)
+            self.assertIn('severity', event)
+            self.assertIn('message', event)
+            self.assertIn('time', event)
+
     def test_split_timeline_into_days(self):
         """Test timeline splitting preserves 24-hour days correctly."""
         simulator = HOSSimulator("John Doe", "TRK-9988", 0.0, "2026-06-11")

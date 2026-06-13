@@ -74,12 +74,14 @@ def create_trip(request):
         simulator.simulate_driving(time_1, start_name, pickup_name)
         
         # Simulate Pickup: 1 hour on duty loading
+        simulator.add_compliance_event('PICKUP', 'blue', 'Loading Freight at Pickup', pickup_name)
         simulator.simulate_on_duty_work(1.0, "Loading Freight at Pickup", pickup_name)
         
         # Simulate Leg 2: Drive from Pickup to Dropoff
         simulator.simulate_driving(time_2, pickup_name, dropoff_name)
         
         # Simulate Dropoff: 1 hour on duty unloading
+        simulator.add_compliance_event('DROPOFF', 'blue', 'Unloading Freight at Dropoff', dropoff_name)
         simulator.simulate_on_duty_work(1.0, "Unloading Freight at Dropoff", dropoff_name)
 
         # 5. Split timeline into calendar days (00:00 to 24:00)

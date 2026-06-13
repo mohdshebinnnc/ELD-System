@@ -128,13 +128,57 @@ def generate_trip_pdf(trip_data, days_data, log_images, output_pdf_path):
     story.append(info_table)
     story.append(Spacer(1, 15))
 
+    # Normalize compliance events (handles dict format and legacy string format)
+    normalized_events = []
+    for v in trip_data.get('violations', []):
+        if isinstance(v, dict):
+            normalized_events.append(v)
+        elif isinstance(v, str):
+            severity = 'amber'
+            category = 'REST_BREAK'
+            msg = v
+            time_str = ''
+            parts = v.split(': ', 1)
+            if len(parts) == 2:
+                time_str = parts[0]
+                msg = parts[1]
+            if '8-hour' in msg:
+                severity = 'amber'
+                category = 'REST_BREAK'
+                msg = 'Required 30-Minute Rest Break'
+            elif '11-hour' in msg:
+                severity = 'amber'
+                category = 'END_OF_SHIFT'
+                msg = 'End Driving Shift (11-Hour Driving Limit Reached)'
+            elif '14-hour' in msg:
+                severity = 'amber'
+                category = 'SLEEPER_BERTH'
+                msg = 'Begin Off-Duty / Sleeper Berth Period'
+            elif '70-hour' in msg:
+                severity = 'amber'
+                category = 'SLEEPER_BERTH'
+                msg = 'Begin Off-Duty / 34-Hour Cycle Restart'
+            elif '❌' in msg:
+                severity = 'red'
+                msg = msg.replace('❌', '').strip()
+            normalized_events.append({
+                'time': time_str,
+                'category': category,
+                'severity': severity,
+                'message': msg,
+                'location': ''
+            })
+
+    has_violations = any(e.get('severity') == 'red' for e in normalized_events)
+    violations_count = sum(1 for e in normalized_events if e.get('severity') == 'red')
+
     # Trip Stats Summary Cards
     stats_data = [
-        ["Total Distance", "Driving Time", "Violations Status"],
+        ["Total Distance", "Driving Time", "Compliance Status"],
         [
             f"{trip_data.get('total_miles', 0.0):.1f} Miles",
             f"{trip_data.get('total_time', 0.0):.1f} Hours",
-            "COMPLIANT" if not trip_data.get('violations') else f"{len(trip_data.get('violations'))} Violation(s)"
+            "COMPLIANT" if not has_violations else f"{violations_count} Violation(s)"
         ]
     ]
     stats_table = Table(stats_data, colWidths=[180, 180, 180])
@@ -146,19 +190,37 @@ def generate_trip_pdf(trip_data, days_data, log_images, output_pdf_path):
         ('FONTNAME', (0,0), (-1,0), 'Helvetica-Bold'),
         ('FONTSIZE', (0,0), (-1,0), 10),
         ('PADDING', (0,0), (-1,-1), 8),
-        ('BACKGROUND', (2,1), (2,1), colors.HexColor('#DCFCE7') if not trip_data.get('violations') else colors.HexColor('#FEE2E2')),
-        ('TEXTCOLOR', (2,1), (2,1), colors.HexColor('#166534') if not trip_data.get('violations') else colors.HexColor('#991B1B')),
+        ('BACKGROUND', (2,1), (2,1), colors.HexColor('#DCFCE7') if not has_violations else colors.HexColor('#FEE2E2')),
+        ('TEXTCOLOR', (2,1), (2,1), colors.HexColor('#166534') if not has_violations else colors.HexColor('#991B1B')),
         ('FONTNAME', (0,1), (-1,1), 'Helvetica-Bold'),
         ('FONTSIZE', (0,1), (-1,1), 12),
     ]))
     story.append(stats_table)
     story.append(Spacer(1, 15))
 
-    # Violations Section (if any)
-    if trip_data.get('violations'):
-        story.append(Paragraph("Compliance Violations Warning", style_heading))
-        for v in trip_data['violations']:
-            story.append(Paragraph(f"<font color='#EF4444'><b>{v}</b></font>", style_body))
+    # FMCSA Compliance Schedule Section
+    if normalized_events:
+        story.append(Paragraph("Required FMCSA Actions & Compliance Schedule", style_heading))
+        for event in normalized_events:
+            severity = event.get('severity', 'blue')
+            color_hex = '#2563EB' # Blue default
+            prefix = '[INFO]'
+            
+            if severity == 'red':
+                color_hex = '#DC2626'
+                prefix = '[VIOLATION]'
+            elif severity == 'amber':
+                color_hex = '#D97706' # Dark gold/amber
+                prefix = '[REQUIRED]'
+            elif severity == 'green':
+                color_hex = '#16A34A'
+                prefix = '[COMPLIANT]'
+
+            time_part = f"({event.get('time')}) " if event.get('time') else ""
+            msg = f"<b>{prefix}</b> {time_part}{event.get('message')}"
+            if event.get('location'):
+                msg += f" at {event.get('location')}"
+            story.append(Paragraph(f"<font color='{color_hex}'>{msg}</font>", style_body))
         story.append(Spacer(1, 15))
 
     # Itinerary / Route Events Timeline

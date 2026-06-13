@@ -123,8 +123,18 @@ class HOSSimulator:
         })
 
     def trigger_violation(self, text):
-        violation_time_str = self.current_time.strftime('%Y-%m-%d %H:%M')
-        self.violations.append(f"{violation_time_str}: {text}")
+        # Fallback for old/direct calls. E.g. default to RED actual violation if not mapped.
+        self.add_compliance_event('REST_BREAK', 'red', text)
+
+    def add_compliance_event(self, category, severity, message, location=""):
+        event_time_str = self.current_time.strftime('%Y-%m-%d %H:%M')
+        self.violations.append({
+            'time': event_time_str,
+            'category': category,
+            'severity': severity,
+            'message': message,
+            'location': location or ''
+        })
 
     def add_timeline_segment(self, status, duration_hours, description, location_name):
         segment_start = self.current_time
@@ -183,6 +193,7 @@ class HOSSimulator:
         self.enter_duty_window_if_needed(location_name)
         # Add 30 minutes on duty for fuel
         self.add_timeline_segment('ON', 0.5, 'Fuel Stop (30 mins On Duty)', location_name)
+        self.add_compliance_event('FUEL_STOP', 'blue', 'Scheduled Fuel Stop', location_name)
         self.cycle_hours_used += 0.5
         if self.in_duty_window:
             self.duty_window_elapsed += 0.5
@@ -213,10 +224,10 @@ class HOSSimulator:
             
             # Check limits
             if self.cycle_hours_used >= 70.0:
-                self.trigger_violation("❌ 70-hour cycle exceeded")
+                self.add_compliance_event('SLEEPER_BERTH', 'amber', 'Begin Off-Duty / 34-Hour Cycle Restart', location_name)
                 self.simulate_cycle_restart(location_name)
             elif self.duty_window_elapsed >= 14.0:
-                self.trigger_violation("❌ 14-hour window exceeded")
+                self.add_compliance_event('SLEEPER_BERTH', 'amber', 'Begin Off-Duty / Sleeper Berth Period', location_name)
                 self.simulate_sleeper_berth(location_name)
 
     def simulate_driving(self, driving_hours, from_loc, to_loc):
@@ -266,16 +277,16 @@ class HOSSimulator:
             # Post-step checks
             # Note: Python float precision check
             if self.cycle_hours_used >= 70.0:
-                self.trigger_violation("❌ 70-hour cycle exceeded")
+                self.add_compliance_event('SLEEPER_BERTH', 'amber', 'Begin Off-Duty / 34-Hour Cycle Restart', from_loc)
                 self.simulate_cycle_restart(from_loc)
             elif self.duty_window_elapsed >= 14.0:
-                self.trigger_violation("❌ 14-hour window exceeded")
+                self.add_compliance_event('SLEEPER_BERTH', 'amber', 'Begin Off-Duty / Sleeper Berth Period', from_loc)
                 self.simulate_sleeper_berth(from_loc)
             elif self.driving_in_window >= 11.0:
-                self.trigger_violation("❌ 11-hour limit exceeded")
+                self.add_compliance_event('END_OF_SHIFT', 'amber', 'End Driving Shift (11-Hour Driving Limit Reached)', from_loc)
                 self.simulate_sleeper_berth(from_loc)
             elif self.driving_since_last_break >= 8.0:
-                self.trigger_violation("❌ 8-hour driving limit reached without break")
+                self.add_compliance_event('REST_BREAK', 'amber', 'Required 30-Minute Rest Break', from_loc)
                 self.simulate_rest_break(from_loc)
             elif abs((self.trip_miles_driven % 1000.0)) < 0.01 or (self.trip_miles_driven > 0 and abs((self.trip_miles_driven % 1000.0) - 1000.0) < 0.01):
                 self.simulate_fuel_stop(from_loc)
