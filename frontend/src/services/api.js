@@ -8,6 +8,15 @@ const apiClient = axios.create({
   },
 });
 
+export const getMediaUrl = (path) => {
+  if (!path) return '';
+  if (path.startsWith('http://') || path.startsWith('https://')) {
+    return path;
+  }
+  const baseUrl = import.meta.env.VITE_API_URL || '';
+  return `${baseUrl.replace(/\/$/, '')}/${path.replace(/^\//, '')}`;
+};
+
 export const apiService = {
   createTrip: async (tripData) => {
     const response = await apiClient.post('/api/trips/create', tripData);

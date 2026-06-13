@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { Download, FileText, ShieldCheck, Printer, FileDown, Loader2, Info } from 'lucide-react';
-import apiService from '../services/api';
+import apiService, { getMediaUrl } from '../services/api';
 
 function PDFViewer({ tripId }) {
   const [pdfUrl, setPdfUrl] = useState('');
@@ -11,7 +11,7 @@ function PDFViewer({ tripId }) {
       setLoading(true);
       try {
         const data = await apiService.getTripPdf(tripId);
-        setPdfUrl(data.pdf_url);
+        setPdfUrl(getMediaUrl(data.pdf_url));
       } catch (err) {
         console.error('Error fetching PDF url:', err);
       } finally {
